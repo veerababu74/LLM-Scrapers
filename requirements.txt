@@ -1,0 +1,19 @@
+# Web scraping
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# LLM scraping services
+firecrawl-py>=0.0.5
+
+# CLI and utilities
+python-dotenv>=1.0.0
+click>=8.1.0
+
+# Data handling
+pydantic>=2.5.0
+
+# Testing
+pytest>=7.4.0
+pytest-cov>=4.1.0
+responses>=0.24.0

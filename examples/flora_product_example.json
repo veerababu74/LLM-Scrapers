@@ -1,0 +1,40 @@
+{
+  "product": {
+    "name": "Flora Plant Unsalted",
+    "description": "Flora Plant Unsalted is a delicious plant-based spread made with nutritious plant oils. Perfect for spreading, cooking and baking. Contains no dairy ingredients and is suitable for vegans.",
+    "price": {
+      "amount": 3.50,
+      "currency": "GBP"
+    },
+    "ingredients": [
+      "Plant oils (rapeseed, palm, sunflower) 65%",
+      "water",
+      "salt 0.3%",
+      "plant based emulsifier (sunflower lecithin)",
+      "folic acid",
+      "vitamins A and D"
+    ],
+    "nutrition": {
+      "per_serving": {
+        "energy": "615kJ/150kcal",
+        "fat": "70g",
+        "saturates": "20g",
+        "carbohydrates": "1g",
+        "sugars": "0g",
+        "fibre": "0g",
+        "protein": "0g",
+        "salt": "0.3g"
+      },
+      "serving_size": "10g"
+    },
+    "images": [
+      "https://www.flora.com/images/flora-plant-unsalted-main.jpg",
+      "https://www.flora.com/images/flora-plant-unsalted-pack.jpg"
+    ],
+    "metadata": {
+      "scraped_at": "2026-02-03T12:00:00.000000",
+      "method": "traditional",
+      "url": "https://www.flora.com/en-gb/our-products/flora-plant-unsalted"
+    }
+  }
+}
