@@ -125,12 +125,13 @@ def parse_nutrition(nutrition_text: str) -> Dict[str, Any]:
     return nutrition
 
 
-def extract_images(image_elements: List[Any]) -> List[str]:
+def extract_images(image_elements: List[Any], base_url: str = '') -> List[str]:
     """
     Extract image URLs from image elements.
     
     Args:
         image_elements: List of image elements or URLs
+        base_url: Base URL for resolving relative paths (optional)
     
     Returns:
         List of image URLs
@@ -149,8 +150,9 @@ def extract_images(image_elements: List[Any]) -> List[str]:
                 # Make absolute URL if needed
                 if src.startswith('//'):
                     src = 'https:' + src
-                elif src.startswith('/'):
-                    src = 'https://www.flora.com' + src
+                elif src.startswith('/') and base_url:
+                    # Use base_url if provided, otherwise try to construct from context
+                    src = base_url.rstrip('/') + src
                 if src.startswith('http'):
                     images.append(src)
     

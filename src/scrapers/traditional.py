@@ -291,7 +291,17 @@ class TraditionalScraper:
         for selector in selectors:
             elements = soup.select(selector)
             if elements:
-                extracted = extract_images(elements)
+                # Extract base URL from the canonical link or current page
+                base_url = ''
+                canonical = soup.find('link', {'rel': 'canonical'})
+                if canonical and canonical.get('href'):
+                    canonical_url = canonical.get('href')
+                    # Extract base URL (scheme + domain)
+                    from urllib.parse import urlparse
+                    parsed = urlparse(canonical_url)
+                    base_url = f"{parsed.scheme}://{parsed.netloc}"
+                
+                extracted = extract_images(elements, base_url=base_url)
                 if extracted:
                     images.extend(extracted)
         
