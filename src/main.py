@@ -9,12 +9,12 @@ from typing import Optional
 from datetime import datetime
 from dotenv import load_dotenv
 
-# Add src to path
-sys.path.insert(0, str(Path(__file__).parent))
+# Add parent directory to path for proper imports
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.traditional import TraditionalScraper
-from scrapers.llm_based import LLMScraper
-from utils.validator import is_valid_url
+from src.scrapers.traditional import TraditionalScraper
+from src.scrapers.llm_based import LLMScraper
+from src.utils.validator import is_valid_url
 
 
 # Load environment variables

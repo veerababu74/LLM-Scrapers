@@ -1,16 +1,17 @@
 """Tests for web scrapers."""
 import pytest
 import sys
+import os
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
 # Add src to path
-sys.path.insert(0, str(Path(__file__).parent.parent / 'src'))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from scrapers.traditional import TraditionalScraper
-from scrapers.llm_based import LLMScraper
-from utils.parser import clean_text, extract_price, parse_ingredients
-from utils.validator import validate_scraped_data, is_valid_url
+from src.scrapers.traditional import TraditionalScraper
+from src.scrapers.llm_based import LLMScraper
+from src.utils.parser import clean_text, extract_price, parse_ingredients
+from src.utils.validator import validate_scraped_data, is_valid_url
 
 
 @pytest.fixture
@@ -107,7 +108,7 @@ class TestTraditionalScraper:
         assert scraper.timeout == 10
         assert scraper.max_retries == 2
     
-    @patch('scrapers.traditional.requests.Session.get')
+    @patch('src.scrapers.traditional.requests.Session.get')
     def test_fetch_with_retry_success(self, mock_get, config):
         """Test successful fetch."""
         mock_response = Mock()
@@ -121,10 +122,11 @@ class TestTraditionalScraper:
         assert html == "<html>Test</html>"
         assert mock_get.call_count == 1
     
-    @patch('scrapers.traditional.requests.Session.get')
+    @patch('src.scrapers.traditional.requests.Session.get')
     def test_fetch_with_retry_failure(self, mock_get, config):
         """Test fetch with all retries failing."""
-        mock_get.side_effect = Exception("Network error")
+        import requests
+        mock_get.side_effect = requests.RequestException("Network error")
         
         scraper = TraditionalScraper(config)
         
@@ -133,7 +135,7 @@ class TestTraditionalScraper:
         
         assert mock_get.call_count == 2  # max_retries = 2
     
-    @patch('scrapers.traditional.requests.Session.get')
+    @patch('src.scrapers.traditional.requests.Session.get')
     def test_scrape_product(self, mock_get, config, sample_html):
         """Test scraping product data."""
         mock_response = Mock()
@@ -179,10 +181,10 @@ class TestLLMScraper:
         with pytest.raises(ValueError, match="API key is required"):
             scraper.scrape("https://example.com")
     
-    @patch('scrapers.llm_based.FirecrawlApp')
-    def test_scrape_with_firecrawl(self, mock_firecrawl, config):
+    def test_scrape_with_firecrawl(self, config):
         """Test scraping with Firecrawl."""
-        # Mock Firecrawl response
+        # Mock Firecrawl module and app
+        mock_firecrawl_module = MagicMock()
         mock_app = Mock()
         mock_app.scrape_url.return_value = {
             'extract': {
@@ -194,19 +196,33 @@ class TestLLMScraper:
                 'images': ['https://example.com/image.jpg']
             }
         }
-        mock_firecrawl.return_value = mock_app
+        
+        mock_firecrawl_class = Mock(return_value=mock_app)
+        mock_firecrawl_module.FirecrawlApp = mock_firecrawl_class
         
         scraper = LLMScraper(config, api_key="test-key")
         
-        with patch.dict('sys.modules', {'firecrawl': MagicMock()}):
-            # We need to mock the import
-            with patch('scrapers.llm_based.FirecrawlApp', mock_firecrawl):
+        # Patch both the module import and the class
+        with patch.dict('sys.modules', {'firecrawl': mock_firecrawl_module}):
+            # Import FirecrawlApp in the module context
+            import src.scrapers.llm_based as llm_module
+            original_firecrawl = getattr(llm_module, 'FirecrawlApp', None)
+            
+            try:
+                # Set the mock in the module
+                setattr(llm_module, 'FirecrawlApp', mock_firecrawl_class)
                 result = scraper.scrape("https://example.com/product")
-        
-        assert 'product' in result
-        product = result['product']
-        assert product['name'] == 'Test Product'
-        assert product['metadata']['method'] == 'llm'
+                
+                assert 'product' in result
+                product = result['product']
+                assert product['name'] == 'Test Product'
+                assert product['metadata']['method'] == 'llm'
+            finally:
+                # Restore original (if it existed)
+                if original_firecrawl is not None:
+                    setattr(llm_module, 'FirecrawlApp', original_firecrawl)
+                elif hasattr(llm_module, 'FirecrawlApp'):
+                    delattr(llm_module, 'FirecrawlApp')
 
 
 class TestDataValidation:
